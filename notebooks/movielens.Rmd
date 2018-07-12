@@ -21,12 +21,37 @@ theme_set(theme_bw())
 
 ```{r, warning=FALSE}
 readr::read_csv(here::here("data/movies.csv"),
-                      progress = FALSE,
-                      col_types = cols(
-                            movieId = col_integer(),
-                            title = col_character(),
-                            genres = col_character()
-                          )) -> data
-data %>% 
+                progress = FALSE,
+                col_types = cols(
+                      movieId = col_integer(),
+                      title = col_character(),
+                      genres = col_character()
+                    )) %>% 
+  mutate(
+    year = as.numeric(
+      sub("\\).*", "",
+          sub(".*\\(", "", title)))) %>% 
+  na.omit() -> movies
+
+movies %>% 
   glimpse()
+
+readr::read_csv(here::here("data/ratings.csv"),
+                progress = FALSE,
+                col_types = cols(
+                userId = col_integer(),
+                movieId = col_integer(),
+                rating = col_double(),
+                timestamp = col_integer()
+                )) %>% 
+  na.omit() -> ratings
+
+ratings %>% 
+  glimpse()
+```
+
+```{r}
+movies %>%
+  ggplot(aes(year)) +
+  geom_bar()
 ```
