@@ -33,9 +33,6 @@ readr::read_csv(here::here("data/movies.csv"),
           sub(".*\\(", "", title)))) %>% 
   na.omit() -> movies
 
-movies %>% 
-  glimpse()
-
 readr::read_csv(here::here("data/ratings.csv"),
                 progress = FALSE,
                 col_types = cols(
@@ -46,12 +43,22 @@ readr::read_csv(here::here("data/ratings.csv"),
                 )) %>% 
   na.omit() -> ratings
 
-ratings %>% 
+dplyr::inner_join(
+  movies,
+  ratings,
+  by="movieId") -> data
+
+data %>%
+  group_by(movieId,title,year,genres) %>%
+  summarise(median_rating = median(rating),
+            well_rated = median_rating > 3.5) -> data
+
+data %>% 
   glimpse()
 ```
 
 ```{r}
-movies %>%
+data %>%
   ggplot(aes(year)) +
   geom_bar()
 ```
