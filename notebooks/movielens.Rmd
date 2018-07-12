@@ -1,0 +1,32 @@
+---
+title: "Analysis on MovieLens dataset"
+date: 10/07/2018
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(here)
+library(tidyverse)
+library(resample)
+
+theme_set(theme_bw())
+```
+
+```{r, warning=FALSE}
+readr::read_csv(here::here("data/movies.csv"),
+                      progress = FALSE,
+                      col_types = cols(
+                            movieId = col_integer(),
+                            title = col_character(),
+                            genres = col_character()
+                          )) -> data
+data %>% 
+  glimpse()
+```
