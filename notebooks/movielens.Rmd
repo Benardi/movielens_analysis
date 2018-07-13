@@ -27,11 +27,12 @@ readr::read_csv(here::here("data/movies.csv"),
                       title = col_character(),
                       genres = col_character()
                     )) %>% 
-  mutate(
-    year = as.numeric(
-      sub("\\).*", "",
-          sub(".*\\(", "", title)))) %>% 
-  na.omit() -> movies
+  group_by(movieId) %>%
+  mutate(year = as.numeric(sub("\\).*", "",sub(".*\\(", "", title))),
+         num_genres = length(as.list(strsplit(genres,'|',fixed = TRUE))[[1]]),
+         homogeneous = num_genres == 1) %>% 
+  na.omit() %>%
+  ungroup() -> movies
 
 readr::read_csv(here::here("data/ratings.csv"),
                 progress = FALSE,
@@ -40,7 +41,7 @@ readr::read_csv(here::here("data/ratings.csv"),
                 movieId = col_integer(),
                 rating = col_double(),
                 timestamp = col_integer()
-                )) %>% 
+                )) %>%
   na.omit() -> ratings
 
 dplyr::inner_join(
@@ -49,12 +50,8 @@ dplyr::inner_join(
   by="movieId") -> data
 
 data %>%
-  group_by(movieId,title,year,genres) %>%
-  summarise(median_rating = median(rating),
-            well_rated = median_rating > 3.5) -> data
-
-data %>% 
   glimpse()
+
 ```
 
 ```{r}
@@ -62,3 +59,33 @@ data %>%
   ggplot(aes(year)) +
   geom_bar()
 ```
+
+```{r}
+data %>%
+  ggplot(aes(num_genres)) +
+  geom_bar()
+```
+
+
+```{r}
+data %>%
+  ggplot(aes(rating, 
+             y=..prop..)) +
+  geom_bar() + 
+  facet_wrap(~ homogeneous) +
+  labs(x="Movie Rating",
+       y="Relative Frequency")
+```
+
+
+```{r}
+data %>%
+  group_by(movieId,
+           title,
+           year,
+           num_genres,
+           homogeneous) %>%
+  summarise(median_rating = median(rating),
+            well_rated = median_rating > 3.5) -> data
+```
+
