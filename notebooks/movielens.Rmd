@@ -15,6 +15,7 @@ output:
 library(here)
 library(tidyverse)
 library(resample)
+library(boot)
 
 theme_set(theme_bw())
 ```
@@ -136,6 +137,27 @@ data.frame(deviation.diff) %>%
 #            homogeneous) %>%
 #   summarise(median_rating = median(rating),
 #             well_rated = median_rating > 3.5) -> data
+```
+
+```{r}
+data %>% 
+  filter(homogeneous) -> temp
+
+meu_theta <- function(x, i) {
+    x %>% 
+        slice(i) -> d
+    fit = lm(rating ~ genres, data=d)
+    return(summary(fit)$r.square)
+}
+
+res.boot <- boot(data = temp, 
+                 statistic = meu_theta, 
+                 R = 2000)
+
+plot(res.boot)
+boot.ci(boot.out = res.boot, 
+        conf = 0.95, 
+        type = "basic")
 ```
 
 
