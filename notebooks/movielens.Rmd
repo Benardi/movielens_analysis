@@ -20,6 +20,8 @@ library(boot)
 theme_set(theme_bw())
 ```
 
+# Prepare and Overview Data
+
 ```{r, warning=FALSE}
 readr::read_csv(here::here("data/movies.csv"),
                 progress = FALSE,
@@ -44,15 +46,28 @@ readr::read_csv(here::here("data/ratings.csv"),
                 timestamp = col_integer()
                 )) %>%
   na.omit() -> ratings
+```
 
+```{r}
 dplyr::inner_join(
   movies,
   ratings,
   by="movieId") -> data
 
+
+data %>%
+  group_by(movieId) %>%
+  summarise(median_rating = median(rating),
+            well_rated = median_rating > 3.5) -> summarised
+
+
+dplyr::inner_join(
+  summarised,
+  data,
+  by="movieId") -> data
+
 data %>%
   glimpse()
-
 ```
 
 ```{r}
@@ -62,6 +77,22 @@ movies %>%
 data %>%
   filter(movieId != 3598) -> data
 ```
+
+* Is Hamlet is being considered twice, we'll take in consideration the entry which refers to the movie as Drama.
+
+```{r}
+data %>%
+  group_by(movieId) %>%
+  summarise(median_rating = median(rating),
+            well_rated = median_rating > 3.5) -> summarised
+
+
+dplyr::inner_join(
+  summarised,
+  data,
+  by="movieId") -> data
+```
+
 
 * Looks like Hamlet was included twice and as Hamlet is clearly a Drama we're gonna remove the entrys that say otherwise
 
@@ -95,6 +126,8 @@ means.diff = CI.percentile(b.diff.means, probs = c(.025, .975))
 means.diff
 ```
 
+# Is the average rating affected by genre homogeneity?
+
 ```{r}
 data.frame(means.diff) %>%
   ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
@@ -107,6 +140,8 @@ data.frame(means.diff) %>%
 * Heterogenous movies (movies with more than one genre) are significantly better rated than the Homogenous movies (movies with only one genre)
 
 * The difference in ratings although undeniable is very small in  practical terms
+
+# Is the rating's dispersion affected by homogeneity in genre?
 
 ```{r}
 b.diff.deviation <- bootstrap2(data$rating, 
@@ -128,16 +163,7 @@ data.frame(deviation.diff) %>%
 
 * There's no significant difference in terms of dispersion  between the ratings of Heterogeneous and Homogeneous movies.
 
-```{r}
-# data %>%
-#   group_by(movieId,
-#            title,
-#            year,
-#            num_genres,
-#            homogeneous) %>%
-#   summarise(median_rating = median(rating),
-#             well_rated = median_rating > 3.5) -> data
-```
+# Is the genre impact on the ratings affected by whether the movie is well rated?
 
 ```{r}
 data %>% 
@@ -145,19 +171,76 @@ data %>%
 
 meu_theta <- function(x, i) {
     x %>% 
-        slice(i) -> d
-    fit = lm(rating ~ genres, data=d)
-    return(summary(fit)$r.square)
+        slice(i) %>% 
+    filter(well_rated) -> d1
+    x %>% 
+        slice(i) %>% 
+    filter(!well_rated) -> d2
+      
+    fit1 = lm(rating ~ genres, data=d1)
+    fit2 = lm(rating ~ genres, data=d2)
+    return(summary(fit1)$r.square - summary(fit2)$r.square)
 }
 
 res.boot <- boot(data = temp, 
                  statistic = meu_theta, 
                  R = 2000)
-
-plot(res.boot)
-boot.ci(boot.out = res.boot, 
+result <- boot.ci(boot.out = res.boot, 
         conf = 0.95, 
         type = "basic")
+result
 ```
 
+```{r}
+X2.5. = c(result$basic[4])
+X97.5. = c(result$basic[5])
+r2.diff = data.frame(X2.5.,X97.5.)
+
+r2.diff %>%
+  ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
+  geom_errorbar(width = .2) +
+  geom_hline(yintercept = 0, colour = "darkorange") +
+  labs(x="")
+```
+
+# Is the rating's dispersion affected by whether the movie is well rated?
+
+```{r}
+data %>% 
+  filter(homogeneous) -> temp
+
+meu_theta <- function(x, i) {
+    x %>% 
+        slice(i) %>% 
+        group_by(well_rated) %>%
+        summarise(sd = sd(rating)) -> y
+  
+    result <- y[y$well_rated == TRUE,]$sd - 
+              y[y$well_rated == FALSE,]$sd
+    
+    return(result)
+}
+
+res.boot <- boot(data = temp, 
+                 statistic = meu_theta, 
+                 R = 2000)
+result_disprs <- boot.ci(boot.out = res.boot, 
+        conf = 0.95, 
+        type = "basic")
+
+result_disprs
+```
+
+
+```{r}
+X2.5. = c(result$basic[4])
+X97.5. = c(result$basic[5])
+r2.diff = data.frame(X2.5.,X97.5.)
+
+r2.diff %>%
+  ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
+  geom_errorbar(width = .2) +
+  geom_hline(yintercept = 0, colour = "darkorange") +
+  labs(x="")
+```
 
