@@ -12,6 +12,20 @@ output:
     toc_float: yes
 ---
 
+<br></br>
+
+# Introduction
+
+</br>
+
+> This report is an analysis on the dataset movielens which can be found in full [here](https://grouplens.org/datasets/movielens/latest/). The code, data and a description of the variables used in this report can be found in the [original repository](https://github.com/Benardi/movielens_analysis/)
+
+</br>
+
+***
+
+</br>
+
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
 library(tidyverse)
@@ -84,7 +98,7 @@ data %>%
 ```{r}
 data %>%
   group_by(movieId) %>%
-  summarise(median_rating = median(rating),
+  summarise(median_rating = median(rating), # Deriving whether a movie is well rated
             well_rated = median_rating > 3.5) -> summarised
 
 
@@ -140,7 +154,7 @@ data %>%
 
 <br>
 
-* A movie will be considered homogeneneous in terms of genre if the movie is classified under a single genre. Therefore, any movie with more than one genre will not be considered homogeneus in terms of genre.
+* A movie will be considered homogeneous in terms of genre if the movie is classified under a single genre. Therefore, any movie with more than one genre will not be considered homogeneous in terms of genre.
 
 ## Data Sample Preview
 
@@ -164,7 +178,7 @@ data %>%
 ```
 
 * The Homogeneous group seems to have more movies around the 1980s
-* The Heterogenous group has the oldest movies. 
+* The Heterogeneous group has the oldest movies. 
 
 ## Is the average rating affected by genre homogeneity?
 
@@ -191,7 +205,7 @@ data.frame(means.diff) %>%
 ```
 
 
-* Heterogenous movies (movies with more than one genre) are significantly better rated than the Homogenous movies (movies with only one genre)
+* Heterogeneous movies (movies with more than one genre) are significantly better rated than the Homogeneous movies (movies with only one genre)
 
 * The difference in ratings although undeniable is very small in  practical terms
 
