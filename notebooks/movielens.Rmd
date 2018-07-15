@@ -35,7 +35,7 @@ library(boot)
 theme_set(theme_bw())
 ```
 
-# Prepare and Overview Data
+# Data Overview 
 
 ```{r, warning=FALSE}
 readr::read_csv(here::here("data/movies.csv"),
@@ -93,7 +93,7 @@ data %>%
   filter(movieId != 3598) -> data
 ```
 
-* Looks like Hamlet was included twice and as Hamlet is clearly a Drama we're gonna remove the entries that say otherwise
+* Looks like Hamlet was included twice. As Hamlet is clearly a Drama we're gonna remove the entries that say otherwise.
 
 ```{r}
 data %>%
@@ -105,8 +105,8 @@ data %>%
        y="Absolute Frequency")
 ```
 
-* There's a whole lot of movies from the 2000's
-* There's movies going as far as the first decade of the 1900's
+* There's a whole lot of movies from the 2000's.
+* There's movies going as far as the first decade of the 1900's.
 
 ```{r}
 data %>%
@@ -116,7 +116,7 @@ data %>%
        y="Absolute Frequency")
 ```
 
-* Most movies have around 2 or 3 genres.
+* Most movies have 2 or 3 genres.
 
 ```{r}
 data %>%
@@ -138,7 +138,7 @@ data %>%
 
 <br>
 
-* A movie will be considered homogeneous in terms of genre if the movie is classified under a single genre. Therefore, any movie with more than one genre will not be considered homogeneous in terms of genre.
+* A movie will be considered homogeneous (in terms of genre) if the movie is classified under a single genre. Therefore, any movie with more than one genre will not be considered homogeneous.
 
 ## Data Sample Preview
 
@@ -170,7 +170,7 @@ data %>%
 
 <br>
 
-* We will use as estimator unpaired difference of the median rating (TRUE - FALSE): 
+* We will use as estimator the unpaired difference of median ratings (TRUE - FALSE): 
     + **The median rating of the well rated minus the median rating of the not well rated**.
 
 ```{r}
@@ -192,7 +192,7 @@ mean.boot <- boot(data = data,
 plot(mean.boot)
 ```
 
-* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+* The bootstrap summary shows evidence of normality both in terms of qqplot and histogram. It's safe to say that the _basic_ method is appropriate.
 
 
 ```{r}
@@ -215,10 +215,11 @@ mean.diff %>%
   ggtitle("Confidence Interval for difference of means")
 ```
 
-
 * There's evidence at 95% of confidence that heterogeneous movies are significantly better rated than the Homogeneous movies.
 
 * The difference in ratings although undeniable is very small in  practical terms
+
+> Aparently staying faithful to the same concept all the time is counter productive. One could argue that to be truly complete a movie should  dab into more than one aspect of the human psyche. This makes sense when we think about Chaplin, whose best movies not only made us laugh but also dared from time to time to make us cry or make us think. 
 
 <br>
 
@@ -226,7 +227,7 @@ mean.diff %>%
 
 <br>
 
-* We will use as estimator the unpaired difference of the standard deviation (TRUE - FALSE): 
+* We will use as estimator the unpaired difference of the standard deviations (TRUE - FALSE): 
     + **The rating's standard deviation of the homogeneous (in genre) minus the rating's standard deviation of the heterogeneous (in genre)**.
 
 ```{r}
@@ -248,7 +249,7 @@ deviation.boot <- boot(data = data,
 plot(deviation.boot)
 ```
 
-* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+* The bootstrap summary shows evidence of normality both in terms of qqplot and histogram. It's safe to say that the _basic_ method is appropriate.
 
 
 ```{r}
@@ -261,16 +262,18 @@ result_deviation
 ```{r}
 X2.5. = c(result_deviation$basic[4])
 X97.5. = c(result_deviation$basic[5])
-result_deviation = data.frame(X2.5.,X97.5.)
+sd.diff = data.frame(X2.5.,X97.5.)
 
-result_deviation %>%
+sd.diff %>%
   ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
-  labs(x="")
+  labs(title="Confidence Interval for difference of standard deviation", x="") 
 ```
 
-* There's no significant difference in terms of dispersion  between the ratings of Heterogeneous and Homogeneous movies.
+* There's no significant difference in terms of dispersion  between the ratings of heterogeneous and homogeneous movies.
+
+> Across homogeneous and heterogeneous movies we could see the same central tendency around 4 stars. We must assume that this has more to do with the nature of how the people rate (extremely positive and extremely bad rates rare, positive ratings more common), rather than to do with whether a movie is homogeneneous in genre.
 
 <br>
 
@@ -282,20 +285,14 @@ result_deviation %>%
 
 <br>
 
-* Where our analysis regards impact of genre we shall only consider the movies homogeneous in terms of genre, we do so to have a clearer idea of the effect of the different genres.
-
-* Movies are considered well rated when they have been rated above 3.5 stars in terms of median.
+* Where our analysis regards impact of genre we shall consider only the movies homogeneous in terms of genre, we do so to have a clearer picture of the effect of the different genres.
+* Movies are considered well rated when they have been rated above 2.5 stars in terms of median. 
 
 ```{r}
 data %>% 
   filter(homogeneous) %>%
   mutate(genres = as.factor(genres)) -> data_homogen
 ```
-
-```{r}
-data
-```
-
 
 ## Data Sample Preview
 
@@ -328,7 +325,7 @@ data_homogen %>%
   labs(y="Movie Rating", x="Movie Genre")
 ```
 
-* The impact of the genre itself apparently remains similar across movies that were well rated and movies that were not, the aforementioned is in terms of sample.
+* **The impact of the genre on the ratings** apparently remains similar across movies that were well rated and movies that were not, the aforementioned is in terms of sample.
 
 <br>
 
@@ -336,8 +333,8 @@ data_homogen %>%
 
 <br>
 
-* We will use as estimator the unpaired difference of the R^2^ of the genre against the ratings (TRUE - FALSE): **The R^2^ of the well rated minus the R^2^ of those not well rated**.
-* The R^2^ in this case represent how much of the variation in the ratings can be explained by the genre.
+* We will use as estimator the unpaired difference of the R^2^ of genre against ratings (TRUE - FALSE): **The R^2^ of the well rated minus the R^2^ of the not well rated**.
+* The R^2^ in this case represents how much of the variation in the ratings can be explained by the genre.
 
 ```{r}
 meu_theta <- function(x, i) {
@@ -359,7 +356,7 @@ r2.boot <- boot(data = data_homogen,
 plot(r2.boot)
 ```
 
-* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+* The bootstrap summary shows evidence of normality both in terms of qqplot and histogram. It's safe to say that the _basic_ method is appropriate.
 
 
 ```{r}
@@ -383,6 +380,8 @@ r2.diff %>%
 
 * There's no evidence of a significant difference in **how much the genre impacts the ratings** when we put side by side the movies whom were well rated and the ones whom weren't.
 * This is in accordance to what we previewed in the sample.
+
+> As one would expect whether the movie is objectively bad or not should not have to do with the movie genre unless people use are biased towards a certain genre. It seems that people's bias towards certain genres didn't play much of a role, a happy surprise to be honest.
 
 <br>
 
@@ -413,7 +412,7 @@ disprs.boot <- boot(data = data,
 plot(disprs.boot)
 ```
 
-* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+* The bootstrap summary shows evidence of normality both in terms of qqplot and histogram. It's safe to say that the _basic_ method is appropriate.
 
 ```{r}
 result_disprs <- boot.ci(boot.out = disprs.boot, 
@@ -423,7 +422,7 @@ result_disprs <- boot.ci(boot.out = disprs.boot,
 result_disprs
 ```
 
-* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+* The bootstrap summary shows evidence of normality both in terms of qqplot and histogram, it's safe to say that the _basic_ method is appropriate.
 
 ```{r}
 X2.5. = c(result_disprs$basic[4])
@@ -438,3 +437,6 @@ r2.diff %>%
 ```
 
 * There's indication of a significant difference at 95% of confidence, which indicates that the  not well rated have a higher dispersion of ratings than the well rated.
+
+> There's more agreement between those who think the movie is good, there are more possibilities of a bad rating and among those the difference in the ratings is extreme e.g. both 2 and 0 are low ratings. Therefore is understandable why  not well rated movies would have more disperse ratings.
+
