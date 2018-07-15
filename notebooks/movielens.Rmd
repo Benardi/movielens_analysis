@@ -34,7 +34,7 @@ readr::read_csv(here::here("data/movies.csv"),
   group_by(movieId) %>%
   mutate(year = as.numeric(sub("\\).*", "",sub(".*\\(", "", title))),
          num_genres = length(as.list(strsplit(genres,'|',fixed = TRUE))[[1]]),
-         homogeneous = num_genres == 1) %>% 
+         homogeneous = num_genres == 1) %>%  # Deriving homogeneity
   na.omit() %>%
   ungroup() -> movies
 
@@ -58,7 +58,7 @@ dplyr::inner_join(
 
 data %>%
   group_by(movieId) %>%
-  summarise(median_rating = median(rating),
+  summarise(median_rating = median(rating), # Deriving whether a movies is well rated
             well_rated = median_rating > 3.5) -> summarised
 
 
@@ -79,7 +79,7 @@ data %>%
   filter(movieId != 3598) -> data
 ```
 
-* As the movie Hamlet is being considered twice, we'll take in consideration the entry which refers to the movie as a Drama.
+* Looks like Hamlet was included twice and as Hamlet is clearly a Drama we're gonna remove the entries that say otherwise
 
 ```{r}
 data %>%
@@ -95,28 +95,52 @@ dplyr::inner_join(
 ```
 
 
-* Looks like Hamlet was included twice and as Hamlet is clearly a Drama we're gonna remove the entrys that say otherwise
+
 
 ```{r}
 data %>%
   group_by(movieId) %>%
   slice(1) %>%
   ggplot(aes(year)) +
-  geom_bar()
+  geom_bar() +
+  labs(x="Movie Year",
+       y="Absolute Frequency")
 ```
+
+* There's a whole lot of movies from the 2000's
+* There's movies going as far as the first decade of the 1900's
 
 ```{r}
 data %>%
   ggplot(aes(num_genres)) +
-  geom_bar()
+  geom_bar() +
+  labs(x="Number of Genres",
+       y="Absolute Frequency")
 ```
+
+* Most movies have around 2 or 3 genres.
+
+```{r}
+data %>%
+  ggplot(aes(rating,y=..prop..)) +
+  geom_bar() +
+  labs(x="Movie Rating", 
+       y="Relative Frequency")
+```
+
+* There's a lot of generous reviews, with 4 stars composing almost 30% of the ratings. 
+
+<br>
+
+***
+
+<br>
 
 # Homogeneity in Genre
 
 <br>
 
-* A movie will be considered homogeneneous in terms of genre if the movie is classified under a single genre.
-* Any movie with more than one genre will be considered heterogeneous in terms of genre
+* A movie will be considered homogeneneous in terms of genre if the movie is classified under a single genre. Therefore, any movie with more than one genre will not be considered homogeneus in terms of genre.
 
 ## Data Sample Preview
 
@@ -128,6 +152,9 @@ data %>%
        y="Movie Rating")
 ```
 
+* There's in fact indication of a difference on what the average rating of the two groups would be. The Heterogeneous movies seem to have more higher ratings in terms of sample.
+* In terms of dispersion the ratings seem to be similarly distributed across both groups in terms of sample.
+
 ```{r}
 data %>%
   ggplot(aes(homogeneous,year)) +
@@ -135,6 +162,9 @@ data %>%
   labs(x="Homogeneous in Genre ",
        y="Year of the movie")
 ```
+
+* The Homogeneous group seems to have more movies around the 1980s
+* The Heterogenous group has the oldest movies. 
 
 ## Is the average rating affected by genre homogeneity?
 
@@ -183,9 +213,17 @@ data.frame(deviation.diff) %>%
 
 * There's no significant difference in terms of dispersion  between the ratings of Heterogeneous and Homogeneous movies.
 
+<br>
+
+***
+
+<br>
+
 # Is the movie well rated
 
-* Where our analysis regards impact of genre we shall considers only the movies homogeneous in terms of genre to have a clearer idea of the effect of the different genres.
+* Where our analysis regards impact of genre we shall only consider the movies homogeneous in terms of genre, we do so to have a clearer idea of the effect of the different genres.
+
+* Movies are considered well rated when they have been rated above 3.5 stars in terms of median.
 
 ```{r}
 data %>% 
@@ -205,9 +243,11 @@ data_homogen %>%
   labs(y="Movie Rating",x="") +
     theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
-        axis.ticks.y=element_blank())
+        axis.ticks.y=element_blank()) +
+  scale_size(range = c(1,15)) 
 ```
 
+* Whether the movie is well rated seems to have an impact on how the ratings are distributed, whether it has a significant impact remains to be seen
 
 ```{r}
 data_homogen %>%
@@ -222,8 +262,11 @@ data_homogen %>%
   labs(y="Movie Rating", x="Movie Genre")
 ```
 
+* The impact of the genre itself apparently remains similar across movies that were well rated and movies that were not, the aforementioned in terms of sample.
 
-## Is the genre impact on the ratings affected by whether the movie is well rated?
+<br>
+
+## Is the impact of the genre on the ratings affected by whether the movie is well rated?
 
 ```{r}
 meu_theta <- function(x, i) {
@@ -242,15 +285,15 @@ meu_theta <- function(x, i) {
 res.boot <- boot(data = data_homogen, 
                  statistic = meu_theta, 
                  R = 2000)
-result <- boot.ci(boot.out = res.boot, 
+result_r2 <- boot.ci(boot.out = res.boot, 
         conf = 0.95, 
         type = "basic")
-result
+result_r2
 ```
 
 ```{r}
-X2.5. = c(result$basic[4])
-X97.5. = c(result$basic[5])
+X2.5. = c(result_r2$basic[4])
+X97.5. = c(result_r2$basic[5])
 r2.diff = data.frame(X2.5.,X97.5.)
 
 r2.diff %>%
@@ -260,7 +303,16 @@ r2.diff %>%
   labs(x="")
 ```
 
+* There's no evidence of a significant difference on how much the genre impacts the ratings when we put side by side the movies whom were well rated and the ones whom weren't.
+* This is in accordance to what we previewed in the sample.
+
+<br>
+
 ## Is the rating's dispersion affected by whether the movie is well rated?
+
+<br>
+
+* We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the standard deviation of the well rated minus the standard deviation of those not well rated**
 
 ```{r}
 meu_theta <- function(x, i) {
@@ -287,8 +339,8 @@ result_disprs
 
 
 ```{r}
-X2.5. = c(result$basic[4])
-X97.5. = c(result$basic[5])
+X2.5. = c(result_disprs$basic[4])
+X97.5. = c(result_disprs$basic[5])
 r2.diff = data.frame(X2.5.,X97.5.)
 
 r2.diff %>%
@@ -298,3 +350,4 @@ r2.diff %>%
   labs(x="")
 ```
 
+* There's indication of a significant difference at 95% of confidence, which indicates that the  not well rated have a higher dispersion of ratings than the well rated.
