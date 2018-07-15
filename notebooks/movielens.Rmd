@@ -3,11 +3,11 @@ title: "Analysis on MovieLens dataset"
 date: 14/07/2018
 author: José Benardi de Souza Nunes
 output:
-  html_notebook:
-    toc: yes
-    toc_float: yes
   html_document:
     df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
     toc: yes
     toc_float: yes
 ---
@@ -98,22 +98,6 @@ data %>%
 ```{r}
 data %>%
   group_by(movieId) %>%
-  summarise(median_rating = median(rating), # Deriving whether a movie is well rated
-            well_rated = median_rating > 3.5) -> summarised
-
-
-dplyr::inner_join(
-  summarised,
-  data,
-  by="movieId") -> data
-```
-
-
-
-
-```{r}
-data %>%
-  group_by(movieId) %>%
   slice(1) %>%
   ggplot(aes(year)) +
   geom_bar() +
@@ -166,8 +150,8 @@ data %>%
        y="Movie Rating")
 ```
 
-* There's in fact indication of a difference on what the average rating of the two groups would be. The Heterogeneous movies seem to have more higher ratings in terms of sample.
-* In terms of dispersion the ratings seem to be similarly distributed across both groups in terms of sample.
+* The plot indicates a difference on the average rating of the two groups. The heterogeneous movies seem to have a higher number of better ratings as far as samples go.
+* In terms of dispersion the ratings seem to be similarly distributed across both groups as far as samples go.
 
 ```{r}
 data %>%
@@ -180,11 +164,14 @@ data %>%
 * The Homogeneous group seems to have more movies around the 1980s
 * The Heterogeneous group has the oldest movies. 
 
+<br>
+
 ## Is the average rating affected by genre homogeneity?
 
 <br>
 
-* We will use as estimator the median rating (TRUE - FALSE) unpaired, **the median rating of the well rated minus the median rating of those not well rated**
+* We will use as estimator unpaired difference of the median rating (TRUE - FALSE): 
+    + **The median rating of the well rated minus the median rating of the not well rated**.
 
 ```{r}
 meu_theta <- function(x, i) {
@@ -224,20 +211,23 @@ mean.diff %>%
   ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
-  labs(x="")
+  labs(x="") +
+  ggtitle("Confidence Interval for difference of means")
 ```
 
 
-* Heterogeneous movies (movies with more than one genre) are significantly better rated than the Homogeneous movies (movies with only one genre)
+* There's evidence at 95% of confidence that heterogeneous movies are significantly better rated than the Homogeneous movies.
 
 * The difference in ratings although undeniable is very small in  practical terms
 
+<br>
 
 ## Is the rating's dispersion affected by homogeneity in genre?
 
 <br>
 
-* We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the rating's standard deviation of the homogeneous (in genre) minus the rating's standard deviation of the heterogeneous (in genre)**.
+* We will use as estimator the unpaired difference of the standard deviation (TRUE - FALSE): 
+    + **The rating's standard deviation of the homogeneous (in genre) minus the rating's standard deviation of the heterogeneous (in genre)**.
 
 ```{r}
 meu_theta <- function(x, i) {
@@ -290,6 +280,8 @@ result_deviation %>%
 
 # Is the movie well rated
 
+<br>
+
 * Where our analysis regards impact of genre we shall only consider the movies homogeneous in terms of genre, we do so to have a clearer idea of the effect of the different genres.
 
 * Movies are considered well rated when they have been rated above 3.5 stars in terms of median.
@@ -299,6 +291,11 @@ data %>%
   filter(homogeneous) %>%
   mutate(genres = as.factor(genres)) -> data_homogen
 ```
+
+```{r}
+data
+```
+
 
 ## Data Sample Preview
 
@@ -316,7 +313,7 @@ data_homogen %>%
   scale_size(range = c(1,15)) 
 ```
 
-* Whether the movie is well rated seems to have an impact on how the ratings are distributed, whether it has a significant impact remains to be seen
+* **Whether the movie is well rated** seems to have an impact on how the ratings are distributed, whether it's significant remains to be seen.
 
 ```{r}
 data_homogen %>%
@@ -331,7 +328,7 @@ data_homogen %>%
   labs(y="Movie Rating", x="Movie Genre")
 ```
 
-* The impact of the genre itself apparently remains similar across movies that were well rated and movies that were not, the aforementioned in terms of sample.
+* The impact of the genre itself apparently remains similar across movies that were well rated and movies that were not, the aforementioned is in terms of sample.
 
 <br>
 
@@ -339,7 +336,7 @@ data_homogen %>%
 
 <br>
 
-* We will use as estimator the R^2^ of the genre against the ratings (TRUE - FALSE) unpaired, **the R^2^ of the well rated minus the R^2^ of those not well rated**.
+* We will use as estimator the unpaired difference of the R^2^ of the genre against the ratings (TRUE - FALSE): **The R^2^ of the well rated minus the R^2^ of those not well rated**.
 * The R^2^ in this case represent how much of the variation in the ratings can be explained by the genre.
 
 ```{r}
@@ -356,17 +353,17 @@ meu_theta <- function(x, i) {
     return(summary(fit1)$r.square - summary(fit2)$r.square)
 }
 
-res.boot <- boot(data = data_homogen, 
+r2.boot <- boot(data = data_homogen, 
                  statistic = meu_theta, 
-                 R = 2000)
-plot(res.boot)
+                 R = 5000)
+plot(r2.boot)
 ```
 
 * The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
 
 
 ```{r}
-result_r2 <- boot.ci(boot.out = res.boot, 
+result_r2 <- boot.ci(boot.out = r2.boot, 
         conf = 0.95, 
         type = "basic")
 result_r2
@@ -384,7 +381,7 @@ r2.diff %>%
   labs(x="")
 ```
 
-* There's no evidence of a significant difference on how much the genre impacts the ratings when we put side by side the movies whom were well rated and the ones whom weren't.
+* There's no evidence of a significant difference in **how much the genre impacts the ratings** when we put side by side the movies whom were well rated and the ones whom weren't.
 * This is in accordance to what we previewed in the sample.
 
 <br>
@@ -393,7 +390,8 @@ r2.diff %>%
 
 <br>
 
-* We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the rating's standard deviation of the well rated minus the rating's standard deviation of those not well rated**
+* We will use as estimator the unpaired difference of the standard deviation (TRUE - FALSE):
+    + **The rating's standard deviation of the well rated minus the rating's standard deviation of the not well rated**.
 
 ```{r}
 meu_theta <- function(x, i) {
@@ -408,18 +406,21 @@ meu_theta <- function(x, i) {
     return(result)
 }
 
-res.boot <- boot(data = data, 
+disprs.boot <- boot(data = data, 
                  statistic = meu_theta, 
-                 R = 2000)
-result_disprs <- boot.ci(boot.out = res.boot, 
+                 R = 5000)
+
+plot(disprs.boot)
+```
+
+* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+
+```{r}
+result_disprs <- boot.ci(boot.out = disprs.boot, 
         conf = 0.95, 
         type = "basic")
 
 result_disprs
-```
-
-```{r}
-plot(res.boot)
 ```
 
 * The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
