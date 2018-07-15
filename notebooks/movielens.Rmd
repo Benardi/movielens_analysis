@@ -312,6 +312,13 @@ meu_theta <- function(x, i) {
 res.boot <- boot(data = data_homogen, 
                  statistic = meu_theta, 
                  R = 2000)
+plot(res.boot)
+```
+
+* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+
+
+```{r}
 result_r2 <- boot.ci(boot.out = res.boot, 
         conf = 0.95, 
         type = "basic")
@@ -364,6 +371,11 @@ result_disprs <- boot.ci(boot.out = res.boot,
 result_disprs
 ```
 
+```{r}
+plot(res.boot)
+```
+
+* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
 
 ```{r}
 X2.5. = c(result_disprs$basic[4])
