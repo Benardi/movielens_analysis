@@ -168,6 +168,10 @@ data %>%
 
 ## Is the average rating affected by genre homogeneity?
 
+<br>
+
+* We will use as estimator the median rating (TRUE - FALSE) unpaired, **the median rating of the well rated minus the median rating of those not well rated**
+
 ```{r}
 b.diff.means <- bootstrap2(data$rating, 
                           treatment = data$homogeneous, 
@@ -192,6 +196,10 @@ data.frame(means.diff) %>%
 * The difference in ratings although undeniable is very small in  practical terms
 
 ## Is the rating's dispersion affected by homogeneity in genre?
+
+<br>
+
+* We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the rating's standard deviation of the homogeneous (in genre) minus the rating's standard deviation of the heterogeneous (in genre)**.
 
 ```{r}
 b.diff.deviation <- bootstrap2(data$rating, 
@@ -268,6 +276,11 @@ data_homogen %>%
 
 ## Is the impact of the genre on the ratings affected by whether the movie is well rated?
 
+<br>
+
+* We will use as estimator the R^2^ of the genre against the ratings (TRUE - FALSE) unpaired, **the R^2^ of the well rated minus the R^2^ of those not well rated**.
+* The R^2^ in this case represent how much of the variation in the ratings can be explained by the genre.
+
 ```{r}
 meu_theta <- function(x, i) {
     x %>% 
@@ -312,7 +325,7 @@ r2.diff %>%
 
 <br>
 
-* We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the standard deviation of the well rated minus the standard deviation of those not well rated**
+* We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the rating's standard deviation of the well rated minus the rating's standard deviation of those not well rated**
 
 ```{r}
 meu_theta <- function(x, i) {
