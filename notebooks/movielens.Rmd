@@ -187,17 +187,40 @@ data %>%
 * We will use as estimator the median rating (TRUE - FALSE) unpaired, **the median rating of the well rated minus the median rating of those not well rated**
 
 ```{r}
-b.diff.means <- bootstrap2(data$rating, 
-                          treatment = data$homogeneous, 
-                          mean, 
-                          R = 10000)
+meu_theta <- function(x, i) {
+    x %>% 
+        slice(i) %>% 
+        group_by(homogeneous) %>%
+        summarise(average = mean(rating)) -> y
+  
+    result <- y[y$homogeneous == TRUE,]$average - 
+              y[y$homogeneous == FALSE,]$average
+    
+    return(result)
+}
 
-means.diff = CI.percentile(b.diff.means, probs = c(.025, .975))
-means.diff
+mean.boot <- boot(data = data, 
+                 statistic = meu_theta, 
+                 R = 5000)
+plot(mean.boot)
+```
+
+* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+
+
+```{r}
+result_mean <- boot.ci(boot.out = mean.boot, 
+        conf = 0.95, 
+        type = "basic")
+result_mean
 ```
 
 ```{r}
-data.frame(means.diff) %>%
+X2.5. = c(result_mean$basic[4])
+X97.5. = c(result_mean$basic[5])
+mean.diff = data.frame(X2.5.,X97.5.)
+
+mean.diff %>%
   ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
@@ -209,6 +232,7 @@ data.frame(means.diff) %>%
 
 * The difference in ratings although undeniable is very small in  practical terms
 
+
 ## Is the rating's dispersion affected by homogeneity in genre?
 
 <br>
@@ -216,17 +240,40 @@ data.frame(means.diff) %>%
 * We will use as estimator the standard deviation (TRUE - FALSE) unpaired, **the rating's standard deviation of the homogeneous (in genre) minus the rating's standard deviation of the heterogeneous (in genre)**.
 
 ```{r}
-b.diff.deviation <- bootstrap2(data$rating, 
-                          treatment = data$homogeneous, 
-                          sd,
-                          R = 10000)
+meu_theta <- function(x, i) {
+    x %>% 
+        slice(i) %>% 
+        group_by(homogeneous) %>%
+        summarise(deviation = sd(rating)) -> y
+  
+    result <- y[y$homogeneous == TRUE,]$deviation - 
+              y[y$homogeneous == FALSE,]$deviation
+    
+    return(result)
+}
 
-deviation.diff = CI.percentile(b.diff.deviation, probs = c(.025, .975))
-deviation.diff
+deviation.boot <- boot(data = data, 
+                 statistic = meu_theta, 
+                 R = 5000)
+plot(deviation.boot)
+```
+
+* The bootstrap summary shows strong evidence of normality both in terms of qqplot as in terms of histogram, it's safe to say that the _basic_ method is appropriate.
+
+
+```{r}
+result_deviation <- boot.ci(boot.out = deviation.boot, 
+        conf = 0.95, 
+        type = "basic")
+result_deviation
 ```
 
 ```{r}
-data.frame(deviation.diff) %>%
+X2.5. = c(result_deviation$basic[4])
+X97.5. = c(result_deviation$basic[5])
+result_deviation = data.frame(X2.5.,X97.5.)
+
+result_deviation %>%
   ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
