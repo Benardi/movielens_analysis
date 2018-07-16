@@ -29,7 +29,6 @@ output:
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
 library(tidyverse)
-library(resample)
 library(boot)
 
 theme_set(theme_bw())
@@ -48,7 +47,9 @@ readr::read_csv(here::here("data/movies.csv"),
   group_by(movieId) %>%
   mutate(year = as.numeric(sub("\\).*", "",sub(".*\\(", "", title))),
          num_genres = length(as.list(strsplit(genres,'|',fixed = TRUE))[[1]]),
-         homogeneous = num_genres == 1) %>%  # Deriving homogeneity
+         homogeneous = num_genres == 1, # Deriving homogeneity
+         xx_century = year <= 2000
+         ) %>%  
   na.omit() %>%
   ungroup() -> movies
 
@@ -134,6 +135,27 @@ data %>%
 
 <br>
 
+# Help on Confidence Intervals
+
+<br>
+
+Throughout this report we will employ Confidence Intervals of the difference of two distinct values, let's call them **A** and **B** for instance.This gives us _three_ possibilities: 
+
+* The C.I of **A - B** is exclusively above 0
+    + A is greater than B
+
+* The C.I of **A - B** is exclusively above 0
+    + A is greater than B
+
+* The C.I of **A - B** contains 0
+    + We can't say which is greater
+
+<br>
+
+***
+
+<br>
+
 # Homogeneity in Genre
 
 <br>
@@ -208,7 +230,7 @@ X97.5. = c(result_mean$basic[5])
 mean.diff = data.frame(X2.5.,X97.5.)
 
 mean.diff %>%
-  ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
+  ggplot(aes(x = "Homogeneous - Heterogeneous",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
   labs(x="") +
@@ -217,7 +239,7 @@ mean.diff %>%
 
 * There's evidence at 95% of confidence that heterogeneous movies are significantly better rated than the Homogeneous movies.
 
-* The difference in ratings although undeniable is very small in  practical terms
+* The difference in ratings although significant in statistical terms is very small in  practical terms
 
 > Aparently staying faithful to the same concept all the time is counter productive. One could argue that to be truly complete a movie should  dab into more than one aspect of the human psyche. This makes sense when we think about Chaplin, whose best movies not only made us laugh but also dared from time to time to make us cry or make us think. 
 
@@ -265,7 +287,7 @@ X97.5. = c(result_deviation$basic[5])
 sd.diff = data.frame(X2.5.,X97.5.)
 
 sd.diff %>%
-  ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
+  ggplot(aes(x = "Homogeneous - Heterogeneous",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
   labs(title="Confidence Interval for difference of standard deviation", x="") 
@@ -329,6 +351,21 @@ data_homogen %>%
 
 <br>
 
+```{r}
+data %>%
+  group_by(movieId) %>%
+  slice(1) %>%
+  ggplot(aes(x=well_rated,
+             fill=xx_century)) +
+  geom_bar() +
+  labs(x="Is Well Rated", 
+       y="Absolute Frequency")
+```
+
+* In terms of sample movies from the XX century seem to have a higher proportion of well rated movies. 
+
+<br>
+
 ## Is the impact of the genre on the ratings affected by whether the movie is well rated?
 
 <br>
@@ -358,7 +395,6 @@ plot(r2.boot)
 
 * The bootstrap summary shows evidence of normality both in terms of qqplot and histogram. It's safe to say that the _basic_ method is appropriate.
 
-
 ```{r}
 result_r2 <- boot.ci(boot.out = r2.boot, 
         conf = 0.95, 
@@ -372,10 +408,11 @@ X97.5. = c(result_r2$basic[5])
 r2.diff = data.frame(X2.5.,X97.5.)
 
 r2.diff %>%
-  ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
+  ggplot(aes(x = "(Well Rated) - (NOT Well Rated)",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
-  labs(x="")
+  labs(x="") +
+    ggtitle("Confidence Interval for Impact of Genre on Ratings")
 ```
 
 * There's no evidence of a significant difference in **how much the genre impacts the ratings** when we put side by side the movies whom were well rated and the ones whom weren't.
@@ -385,58 +422,61 @@ r2.diff %>%
 
 <br>
 
-## Is the rating's dispersion affected by whether the movie is well rated?
+## Is there a difference in the proportion of well rated rated movies when we compare movies from XX and XXI century?
 
 <br>
 
-* We will use as estimator the unpaired difference of the standard deviation (TRUE - FALSE):
-    + **The rating's standard deviation of the well rated minus the rating's standard deviation of the not well rated**.
+* We will use as estimator the unpaired difference of the proportion of well rated (TRUE - FALSE):
+    + **The proportion of well rated of movies from the XX century minus the proportion of well rated of movies from the XXI century**.
 
 ```{r}
 meu_theta <- function(x, i) {
     x %>% 
-        slice(i) %>% 
-        group_by(well_rated) %>%
-        summarise(sd = sd(rating)) -> y
+        slice(i) -> d
   
-    result <- y[y$well_rated == TRUE,]$sd - 
-              y[y$well_rated == FALSE,]$sd
+    d %>% 
+      group_by(xx_century) %>%
+        summarise(n = n()) -> y  
+    d %>% 
+      nrow() -> total
     
-    return(result)
+    prop1 <- y[y$xx_century == TRUE,]$n / total
+    prop2 <- y[y$xx_century == FALSE,]$n / total
+    
+    return(prop1 - prop2)
 }
 
-disprs.boot <- boot(data = data, 
+proport.boot <- boot(data = data, 
                  statistic = meu_theta, 
                  R = 5000)
 
-plot(disprs.boot)
+plot(proport.boot)
 ```
 
 * The bootstrap summary shows evidence of normality both in terms of qqplot and histogram. It's safe to say that the _basic_ method is appropriate.
 
 ```{r}
-result_disprs <- boot.ci(boot.out = disprs.boot, 
+result_proport <- boot.ci(boot.out = proport.boot, 
         conf = 0.95, 
         type = "basic")
 
-result_disprs
+result_proport
 ```
-
-* The bootstrap summary shows evidence of normality both in terms of qqplot and histogram, it's safe to say that the _basic_ method is appropriate.
 
 ```{r}
-X2.5. = c(result_disprs$basic[4])
-X97.5. = c(result_disprs$basic[5])
-r2.diff = data.frame(X2.5.,X97.5.)
+X2.5. = c(result_proport$basic[4])
+X97.5. = c(result_proport$basic[5])
+prop.diff = data.frame(X2.5.,X97.5.)
 
-r2.diff %>%
-  ggplot(aes(x = "Difference",ymin = X2.5., ymax = X97.5.)) +
+prop.diff %>%
+  ggplot(aes(x = "(XX century) - (XXI century)",ymin = X2.5., ymax = X97.5.)) +
   geom_errorbar(width = .2) +
   geom_hline(yintercept = 0, colour = "darkorange") +
-  labs(x="")
+  labs(x="") +
+    ggtitle("Confidence Interval for proportion of well rated")
 ```
 
-* There's indication of a significant difference at 95% of confidence, which indicates that the  not well rated have a higher dispersion of ratings than the well rated.
+* There's indication of a significant difference at 95% of confidence, which indicates that movies from the XX century have a higher proportion of well rated movies in terms of inference as well.
 
-> There's more agreement between those who think the movie is good, there are more possibilities of a bad rating and among those the difference in the ratings is extreme e.g. both 2 and 0 are low ratings. Therefore is understandable why  not well rated movies would have more disperse ratings.
+> The XX century has had its fair share of awful movies, however it's natural that most of the forgettable movies don't make their way into our minds and datasets. The bad movies from the XXI century are still fresh on our minds and our datasets. For this reason it's understandable that there are less well rated movies in the group of the XXI century.
 

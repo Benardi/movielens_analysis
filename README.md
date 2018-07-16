@@ -17,6 +17,7 @@ Data in the repository has the following attributes, some are derived inside the
 - `userId`: The id of the user       
 - `rating`: The rating give by the user   
 - `timestamp`: The timestamp of the rating made by the user 
+- `xx_century`: Whether the movie is from the XX century, otherwise it's from the XXI century
 
 ## Dependencies
 
@@ -24,5 +25,4 @@ The notebooks inside this project have the following dependecies:
 
 - here
 - tidyverse
-- resample
 - boot
