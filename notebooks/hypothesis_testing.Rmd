@@ -3,19 +3,21 @@ title: "Hypothesis testing on MovieLens dataset"
 date: 14/07/2018
 author: José Benardi de Souza Nunes
 output:
-  html_document:
-    df_print: paged
+  html_notebook:
     toc: yes
     toc_float: yes
-  html_notebook:
+  html_document:
+    df_print: paged
     toc: yes
     toc_float: yes
 ---
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
+library(coin)
 library(resample)
 library(tidyverse)
+
 
 theme_set(theme_bw())
 ```
@@ -84,6 +86,45 @@ data %>%
 
 <br>
 
+```{r}
+data %>%
+  group_by(movieId) %>%
+  slice(1) %>%
+  ggplot(aes(year)) +
+  geom_bar() +
+  labs(x="Movie Year",
+       y="Absolute Frequency")
+```
+
+* There's a whole lot of movies from the 2000's.
+* There's movies going as far as the first decade of the 1900's.
+
+```{r}
+data %>%
+  ggplot(aes(num_genres)) +
+  geom_bar() +
+  labs(x="Number of Genres",
+       y="Absolute Frequency")
+```
+
+* Most movies have 2 or 3 genres.
+
+```{r}
+data %>%
+  ggplot(aes(rating,y=..prop..)) +
+  geom_bar() +
+  labs(x="Movie Rating", 
+       y="Relative Frequency")
+```
+
+* There's a lot of generous reviews, with 4 stars composing almost 30% of the ratings. 
+
+<br>
+
+***
+
+<br>
+
 # Is the movie well rated
 
 <br>
@@ -102,27 +143,29 @@ Agora vejamos o quão frequente seria encontrarmos uma diferença do tamanho que
 
 No caso onde a diferença que observamos é improvável na hipótese nula, então observamos algo que é indicativo de associação. Repare que é uma dupla negação: se não acontece associação como a que vimos na amostra na situação onde não há associação, então temos evidência de que há associação. 
 
+## Manual
+
 ```{r}
-# diffs = replicate(10000, {
-#   data %>%
-#   mutate(century_shuffled = sample(xx_century, n()))
-#   group_by(century_shuffled) %>%
-#     summarise(n = n()) -> y  
-# 
-#   medias = sw5x6 %>% 
-#     mutate(id_embaralhado = sample(title, n())) %>% 
-#     group_by(id_embaralhado) %>% 
-#     summarise(media = mean(rating))
-#   e1 = medias %>% 
-#     filter(id_embaralhado == nomes_episodios[5])
-#   e4 = medias %>% 
-#     filter(id_embaralhado == nomes_episodios[6])
-#   return(e1$media - e4$media)
-# })
-# glimpse(diffs)
+diffs <- replicate(5000, {
+  data %>%
+  mutate(century_shuffled = sample(xx_century, n())) -> temp
+  
+  temp %>%
+  group_by(century_shuffled) %>%
+    filter(well_rated) %>%
+    summarise(n = n()) -> y  
+  
+  temp %>%  
+    group_by(century_shuffled) %>%
+    summarise(n = n()) -> total 
+  
+    prop1 <- y[y$century_shuffled == TRUE,]$n / total[total$century_shuffled == TRUE,]$n
+    prop2 <- y[y$century_shuffled == FALSE,]$n / total[total$century_shuffled == FALSE,]$n
+      
+    return(prop1 - prop2)
+  })
 ```
 
-## Manual
 
 ```{r}
 data %>%
@@ -171,19 +214,8 @@ tibble(diferenca = diffs) %>%
   geom_histogram(bins = 30, 
                  fill= "grey",
                  color="black") + 
-  geom_vline(xintercept = diff.prop.obsrvd) +
-  geom_vline(xintercept = (-1) * diff.prop.obsrvd) +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+  geom_vline(xintercept = diff.prop.obsrvd) 
 ```
-
-```{r}
-tibble(diferenca = diffs) %>%
-  ggplot(aes(x = "", y = diferenca)) +
-  geom_boxplot() +
-  geom_hline(yintercept = diff.prop.obsrvd) +
-  geom_hline(yintercept = (-1) *diff.prop.obsrvd) 
-```
-
 
 ```{r}
 # p-valor
@@ -198,3 +230,11 @@ permutationTest2(data = data,
                  statistic = prop.table(table(well_rated))[2],
                  treatment = xx_century)
 ```
+
+## Let's use the coin package
+
+```{r}
+independence_test(well_rated ~ xx_century, 
+                  data = data)
+```
+
