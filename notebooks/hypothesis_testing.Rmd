@@ -155,25 +155,64 @@ data %>%
 
 <br>
 
-# Is the movie well rated
+# Hypothesis testing considerations
 
 <br>
 
-* Where our analysis regards impact of genre we shall consider only the movies homogeneous in terms of genre, we do so to have a clearer picture of the effect of the different genres.
+#### Null hypothesis
+
+There's an association in our sample (an estimate that can be observed), and we want to test whether this association in the sample is significant (it in fact exists) or is mere result of chance.  
+To do so we use as reference a situation where there's no association, we call this version of the sample the _null hypothesis_. 
+
+#### Permutation test
+
+In the case of the *permutation test* the association in the sample is nullified by applying a random process on it, and thus we generate a  _null hypothesis_.
+
+#### Hypothesis test
+
+* Firstly we observe an estimate in the data (An association).
+    + If an estimate such as the one we observed in the sample happens easily in the _null hypothesis_ it means that we don' have strong evidence of association. What we observed happens when there's no association as well.
+    + If an estimate such as the one we observed is improbable in the _null hypothesis_ we have an indicative of association. If an association as the one we observed in the sample (estimate) doesn't happen when there's no association, then there's evidence of an association (**Double negative**). 
+    
+#### P-Value
+
+**P-Value** is the probability of the _null hypothesis_ rendering an association such as the one we observed in the sample. 
+
+>The more times the _null hypothesis_ succeds at creating estimates as extreme as the ones we observed in the sample the higher is the chance that the estimate/association we observed in the sample is merely result of chance, because chance ( _null hypothesis_ ) is doing the same as our sample.   
+
+We can phrase the **P-Value** in two ways:
+
+* When we look at the _null hypothesis_ **P-Value** is the proportion of the estimates produced by the _null hypothesis_ that are as extreme as the one we observed in the sample.
+* **P-Value** is the proportion of the behavior of the _null hypothesis_ where it succeds at repeating the association we observed in the sample.
+
+#### Significance Level (Alpha)
+
+The significance level, also denoted as alpha or α, is the probability of rejecting the null hypothesis when it is true. For example, a significance level of 0.05 indicates a 5% risk of concluding that a difference exists when there is no actual difference.
+
+A more intuitive way to understand alpha may be that the smaller the alpha the more extreme the values the _null hypothesis_ has to create for we to consider similar to the one we observed in the sample. 
+
+* It's something of a culture around the community that uses Statistics to use a Alpha of 0.05 ( 5% risk of concluding that a difference exists when there is no actual difference).
+* While this somewhat magic number should be taken with a grain of salt, it's still widely accepted outside tests that impact the safety of people (e.g. drug tests). 
+
+> We will use a Significance Level (Alpha) of 0.05 throughout this analysis.
+
+<br>
+
+# Proportion of well rated movies 
+
+<br>
+
+#### Is there a difference in the proportion of well rated rated movies when we compare movies from XX and XXI century?
+
+<br>
+
 * Movies are considered well rated when they have been rated above 2.5 stars in terms of median. 
-
-## Is there a difference in the proportion of well rated rated movies when we compare movies from XX and XXI century?
-
-<br>
-
 * We will use as estimator the unpaired difference of the proportion of well rated (TRUE - FALSE):
     + **The proportion of well rated of movies from the XX century minus the proportion of well rated of movies from the XXI century**.
     
-Agora vejamos o quão frequente seria encontrarmos uma diferença do tamanho que encontramos se não houvesse associação nenhuma entre qual é o episódio e qual é a avaliação que ele recebe. A situação onde não existe associação é a hipótese nula. Se a diferença que observamos em nossa amostra acontece facilmente na hipótese nula, isso significa que não temos evidência forte de associação: o que observamos acontece também quando não há associação. 
+<br>
 
-No caso onde a diferença que observamos é improvável na hipótese nula, então observamos algo que é indicativo de associação. Repare que é uma dupla negação: se não acontece associação como a que vimos na amostra na situação onde não há associação, então temos evidência de que há associação. 
-
-## Let's use the resample package
+### Let's use the resample package
 
 ```{r}
 permutationTest2(data = data,
@@ -185,16 +224,18 @@ permutationTest2(data = data,
 <br>
 
 * In accordance to our previous results employing a **Confindence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association and consequently the null hypothesis should be rejected.
-    +  The _two tailed permutation test_ rendered a **PValue** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an effect is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.    
+    +  The _two tailed permutation test_ rendered a **PValue** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.    
 
 <br>
 
-## Let's use the coin package
+### Let's use the coin package
 
 ```{r}
 independence_test(well_rated ~ xx_century, 
                   data = data)
 ```
 
+<br>
+
 * Once again we have results that agree with our previous results employing a **Confindence Interval**.
-    +  The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an effect is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
+    +  The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
