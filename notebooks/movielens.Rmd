@@ -293,7 +293,7 @@ sd.diff %>%
   labs(title="Confidence Interval for difference of standard deviation", x="") 
 ```
 
-* There's no significant difference in terms of dispersion  between the ratings of heterogeneous and homogeneous movies.
+* There's no significant difference at 95% of confidence in terms of dispersion  between the ratings of heterogeneous and homogeneous movies.
 
 > Across homogeneous and heterogeneous movies we could see the same central tendency around 4 stars. We must assume that this has more to do with the nature of how the people rate (extremely positive and extremely bad rates rare, positive ratings more common), rather than to do with whether a movie is homogeneneous in genre.
 
@@ -415,10 +415,10 @@ r2.diff %>%
     ggtitle("Confidence Interval for Impact of Genre on Ratings")
 ```
 
-* There's no evidence of a significant difference in **how much the genre impacts the ratings** when we put side by side the movies whom were well rated and the ones whom weren't.
+* There's no evidence of a significant difference at 95% of confidence in **how much the genre impacts the ratings** when we put side by side the movies whom were well rated and the ones whom weren't.
 * This is in accordance to what we previewed in the sample.
 
-> As one would expect whether the movie is objectively bad or not should not have to do with the movie genre unless people use are biased towards a certain genre. It seems that people's bias towards certain genres didn't play much of a role, a happy surprise to be honest.
+> As one would expect whether the movie is objectively bad or not should not have to do with the movie genre unless people are biased towards a certain genre. It seems that people's bias towards certain genres didn't play much of a role, a happy surprise to be honest.
 
 <br>
 
@@ -429,6 +429,7 @@ r2.diff %>%
 * We will use as estimator the unpaired difference of the proportion of well rated (TRUE - FALSE):
     + **The proportion of well rated of movies from the XX century minus the proportion of well rated of movies from the XXI century**.
 
+
 ```{r}
 meu_theta <- function(x, i) {
     x %>% 
@@ -436,12 +437,15 @@ meu_theta <- function(x, i) {
   
     d %>% 
       group_by(xx_century) %>%
+        filter(well_rated) %>%
         summarise(n = n()) -> y  
     d %>% 
-      nrow() -> total
+        group_by(xx_century) %>%
+        summarise(n = n()) -> total 
+
     
-    prop1 <- y[y$xx_century == TRUE,]$n / total
-    prop2 <- y[y$xx_century == FALSE,]$n / total
+    prop1 <- y[y$xx_century == TRUE,]$n / total[total$xx_century == TRUE,]$n
+    prop2 <- y[y$xx_century == FALSE,]$n / total[total$xx_century == FALSE,]$n
     
     return(prop1 - prop2)
 }
@@ -476,7 +480,7 @@ prop.diff %>%
     ggtitle("Confidence Interval for proportion of well rated")
 ```
 
-* There's indication of a significant difference at 95% of confidence, which indicates that movies from the XX century have a higher proportion of well rated movies in terms of inference as well.
+* There's significant evidence at 95% of confidence, which indicates that movies from the XX century have a higher proportion of well rated movies in terms of inference as well.
 
 > The XX century has had its fair share of awful movies, however it's natural that most of the forgettable movies don't make their way into our minds and datasets. The bad movies from the XXI century are still fresh on our minds and our datasets. For this reason it's understandable that there are less well rated movies in the group of the XXI century.
 
