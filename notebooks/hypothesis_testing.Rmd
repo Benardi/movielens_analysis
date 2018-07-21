@@ -14,6 +14,7 @@ output:
 
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
+library(resample)
 library(tidyverse)
 
 theme_set(theme_bw())
@@ -80,3 +81,120 @@ data %>%
 ```
 
 * Looks like Hamlet was included twice. As Hamlet is clearly a Drama we're gonna remove the entries that say otherwise.
+
+<br>
+
+# Is the movie well rated
+
+<br>
+
+* Where our analysis regards impact of genre we shall consider only the movies homogeneous in terms of genre, we do so to have a clearer picture of the effect of the different genres.
+* Movies are considered well rated when they have been rated above 2.5 stars in terms of median. 
+
+## Is there a difference in the proportion of well rated rated movies when we compare movies from XX and XXI century?
+
+<br>
+
+* We will use as estimator the unpaired difference of the proportion of well rated (TRUE - FALSE):
+    + **The proportion of well rated of movies from the XX century minus the proportion of well rated of movies from the XXI century**.
+    
+Agora vejamos o quão frequente seria encontrarmos uma diferença do tamanho que encontramos se não houvesse associação nenhuma entre qual é o episódio e qual é a avaliação que ele recebe. A situação onde não existe associação é a hipótese nula. Se a diferença que observamos em nossa amostra acontece facilmente na hipótese nula, isso significa que não temos evidência forte de associação: o que observamos acontece também quando não há associação. 
+
+No caso onde a diferença que observamos é improvável na hipótese nula, então observamos algo que é indicativo de associação. Repare que é uma dupla negação: se não acontece associação como a que vimos na amostra na situação onde não há associação, então temos evidência de que há associação. 
+
+```{r}
+# diffs = replicate(10000, {
+#   data %>%
+#   mutate(century_shuffled = sample(xx_century, n()))
+#   group_by(century_shuffled) %>%
+#     summarise(n = n()) -> y  
+# 
+#   medias = sw5x6 %>% 
+#     mutate(id_embaralhado = sample(title, n())) %>% 
+#     group_by(id_embaralhado) %>% 
+#     summarise(media = mean(rating))
+#   e1 = medias %>% 
+#     filter(id_embaralhado == nomes_episodios[5])
+#   e4 = medias %>% 
+#     filter(id_embaralhado == nomes_episodios[6])
+#   return(e1$media - e4$media)
+# })
+# glimpse(diffs)
+```
+
+## Manual
+
+```{r}
+data %>%
+group_by(xx_century) %>%
+  filter(well_rated) %>%
+  summarise(n = n()) -> y  
+
+data %>%  
+  group_by(xx_century) %>%
+  summarise(n = n()) -> total 
+
+  prop1 <- y[y$xx_century == TRUE,]$n / total[total$xx_century == TRUE,]$n
+  prop2 <- y[y$xx_century == FALSE,]$n / total[total$xx_century == FALSE,]$n
+
+diff.prop.obsrvd = prop1 - prop2  
+print(paste("Observed difference in proportion:",diff.prop.obsrvd))
+```
+
+
+```{r}
+diffs <- replicate(5000, {
+  data %>%
+  mutate(century_shuffled = sample(xx_century, n())) -> temp
+  
+  temp %>%
+  group_by(century_shuffled) %>%
+    filter(well_rated) %>%
+    summarise(n = n()) -> y  
+  
+  temp %>%  
+    group_by(century_shuffled) %>%
+    summarise(n = n()) -> total 
+  
+    prop1 <- y[y$century_shuffled == TRUE,]$n / total[total$century_shuffled == TRUE,]$n
+    prop2 <- y[y$century_shuffled == FALSE,]$n / total[total$century_shuffled == FALSE,]$n
+      
+    return(prop1 - prop2)
+  })
+
+glimpse(diffs)
+```
+
+```{r}
+tibble(diferenca = diffs) %>% 
+  ggplot(aes(x = diferenca)) + 
+  geom_histogram(bins = 30, 
+                 fill= "grey",
+                 color="black") + 
+  geom_vline(xintercept = diff.prop.obsrvd) +
+  geom_vline(xintercept = (-1) * diff.prop.obsrvd) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) 
+```
+
+```{r}
+tibble(diferenca = diffs) %>%
+  ggplot(aes(x = "", y = diferenca)) +
+  geom_boxplot() +
+  geom_hline(yintercept = diff.prop.obsrvd) +
+  geom_hline(yintercept = (-1) *diff.prop.obsrvd) 
+```
+
+
+```{r}
+# p-valor
+sum(abs(diffs) >= abs(diff.prop.obsrvd)) / length(diffs)
+```
+
+## Let's use the resample package
+
+```{r}
+permutationTest2(data = data,
+                 R=5000,
+                 statistic = prop.table(table(well_rated))[2],
+                 treatment = xx_century)
+```
