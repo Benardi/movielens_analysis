@@ -1,0 +1,82 @@
+---
+title: "Hypothesis testing on MovieLens dataset"
+date: 14/07/2018
+author: José Benardi de Souza Nunes
+output:
+  html_document:
+    df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
+    toc: yes
+    toc_float: yes
+---
+
+```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
+library(here)
+library(tidyverse)
+
+theme_set(theme_bw())
+```
+
+# Data Overview 
+
+```{r, warning=FALSE}
+readr::read_csv(here::here("data/movies.csv"),
+                progress = FALSE,
+                col_types = cols(
+                      movieId = col_integer(),
+                      title = col_character(),
+                      genres = col_character()
+                    )) %>% 
+  group_by(movieId) %>%
+  mutate(year = as.numeric(sub("\\).*", "",sub(".*\\(", "", title))),
+         num_genres = length(as.list(strsplit(genres,'|',fixed = TRUE))[[1]]),
+         homogeneous = num_genres == 1, # Deriving homogeneity
+         xx_century = year <= 2000
+         ) %>%  
+  na.omit() %>%
+  ungroup() -> movies
+
+readr::read_csv(here::here("data/ratings.csv"),
+                progress = FALSE,
+                col_types = cols(
+                userId = col_integer(),
+                movieId = col_integer(),
+                rating = col_double(),
+                timestamp = col_integer()
+                )) %>%
+  na.omit() -> ratings
+```
+
+```{r}
+dplyr::inner_join(
+  movies,
+  ratings,
+  by="movieId") -> data
+
+
+data %>%
+  group_by(movieId) %>%
+  summarise(median_rating = median(rating), # Deriving whether a movies is well rated
+            well_rated = median_rating > 3.5) -> summarised
+
+
+dplyr::inner_join(
+  summarised,
+  data,
+  by="movieId") -> data
+
+data %>%
+  glimpse()
+```
+
+```{r}
+movies %>%
+  filter(title == "Hamlet (2000)")
+
+data %>%
+  filter(movieId != 3598) -> data
+```
+
+* Looks like Hamlet was included twice. As Hamlet is clearly a Drama we're gonna remove the entries that say otherwise.
