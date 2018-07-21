@@ -12,6 +12,20 @@ output:
     toc_float: yes
 ---
 
+<br></br>
+
+# Introduction
+
+</br>
+
+> This report is an analysis on the dataset movielens which can be found in full [here](https://grouplens.org/datasets/movielens/latest/). The code, data, a description of the variables used in this report and another report employing Confindence Intervals on the same dataset can be found in the [original repository](https://github.com/Benardi/movielens_analysis/)
+
+</br>
+
+***
+
+</br>
+
 ```{r setup, echo=FALSE, warning=FALSE, message=FALSE}
 library(here)
 library(coin)
@@ -23,6 +37,10 @@ theme_set(theme_bw())
 ```
 
 # Data Overview 
+
+</br>
+
+## Loading and filtering data
 
 ```{r, warning=FALSE}
 readr::read_csv(here::here("data/movies.csv"),
@@ -86,6 +104,8 @@ data %>%
 
 <br>
 
+## Checking overall data consistency
+
 ```{r}
 data %>%
   group_by(movieId) %>%
@@ -121,6 +141,16 @@ data %>%
 
 <br>
 
+## Conclusion
+
+<br>
+
+* Anomalous data filtered (i.e. Hamlet).
+
+* No further data found violating expected range or categories.
+
+<br>
+
 ***
 
 <br>
@@ -152,9 +182,19 @@ permutationTest2(data = data,
                  treatment = xx_century)
 ```
 
+<br>
+
+* In accordance to our previous results employing a **Confindence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association and consequently the null hypothesis should be rejected.
+    +  The _two tailed permutation test_ rendered a **PValue** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an effect is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.    
+
+<br>
+
 ## Let's use the coin package
 
 ```{r}
 independence_test(well_rated ~ xx_century, 
                   data = data)
 ```
+
+* Once again we have results that agree with our previous results employing a **Confindence Interval**.
+    +  The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an effect is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
