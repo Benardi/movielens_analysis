@@ -143,85 +143,6 @@ Agora vejamos o quão frequente seria encontrarmos uma diferença do tamanho que
 
 No caso onde a diferença que observamos é improvável na hipótese nula, então observamos algo que é indicativo de associação. Repare que é uma dupla negação: se não acontece associação como a que vimos na amostra na situação onde não há associação, então temos evidência de que há associação. 
 
-## Manual
-
-```{r}
-diffs <- replicate(5000, {
-  data %>%
-  mutate(century_shuffled = sample(xx_century, n())) -> temp
-  
-  temp %>%
-  group_by(century_shuffled) %>%
-    filter(well_rated) %>%
-    summarise(n = n()) -> y  
-  
-  temp %>%  
-    group_by(century_shuffled) %>%
-    summarise(n = n()) -> total 
-  
-    prop1 <- y[y$century_shuffled == TRUE,]$n / total[total$century_shuffled == TRUE,]$n
-    prop2 <- y[y$century_shuffled == FALSE,]$n / total[total$century_shuffled == FALSE,]$n
-      
-    return(prop1 - prop2)
-  })
-```
-
-
-```{r}
-data %>%
-group_by(xx_century) %>%
-  filter(well_rated) %>%
-  summarise(n = n()) -> y  
-
-data %>%  
-  group_by(xx_century) %>%
-  summarise(n = n()) -> total 
-
-  prop1 <- y[y$xx_century == TRUE,]$n / total[total$xx_century == TRUE,]$n
-  prop2 <- y[y$xx_century == FALSE,]$n / total[total$xx_century == FALSE,]$n
-
-diff.prop.obsrvd = prop1 - prop2  
-print(paste("Observed difference in proportion:",diff.prop.obsrvd))
-```
-
-
-```{r}
-diffs <- replicate(5000, {
-  data %>%
-  mutate(century_shuffled = sample(xx_century, n())) -> temp
-  
-  temp %>%
-  group_by(century_shuffled) %>%
-    filter(well_rated) %>%
-    summarise(n = n()) -> y  
-  
-  temp %>%  
-    group_by(century_shuffled) %>%
-    summarise(n = n()) -> total 
-  
-    prop1 <- y[y$century_shuffled == TRUE,]$n / total[total$century_shuffled == TRUE,]$n
-    prop2 <- y[y$century_shuffled == FALSE,]$n / total[total$century_shuffled == FALSE,]$n
-      
-    return(prop1 - prop2)
-  })
-
-glimpse(diffs)
-```
-
-```{r}
-tibble(diferenca = diffs) %>% 
-  ggplot(aes(x = diferenca)) + 
-  geom_histogram(bins = 30, 
-                 fill= "grey",
-                 color="black") + 
-  geom_vline(xintercept = diff.prop.obsrvd) 
-```
-
-```{r}
-# p-valor
-sum(abs(diffs) >= abs(diff.prop.obsrvd)) / length(diffs)
-```
-
 ## Let's use the resample package
 
 ```{r}
@@ -237,4 +158,3 @@ permutationTest2(data = data,
 independence_test(well_rated ~ xx_century, 
                   data = data)
 ```
-
