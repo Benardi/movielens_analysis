@@ -1,6 +1,6 @@
 ---
 title: "Hypothesis testing on MovieLens dataset"
-date: 14/07/2018
+date: 21/07/2018
 author: José Benardi de Souza Nunes
 output:
   html_notebook:
@@ -164,15 +164,21 @@ data %>%
 There's an association in our sample (an estimate that can be observed), and we want to test whether this association in the sample is significant (it in fact exists) or is mere result of chance.  
 To do so we use as reference a situation where there's no association, we call this version of the sample the _null hypothesis_. 
 
+<br>
+
 #### Permutation test
 
 In the case of the *permutation test* the association in the sample is nullified by applying a random process on it, and thus we generate a  _null hypothesis_.
 
+<br>
+
 #### Hypothesis test
 
 * Firstly we observe an estimate in the data (An association).
-    + If an estimate such as the one we observed in the sample happens easily in the _null hypothesis_ it means that we don' have strong evidence of association. What we observed happens when there's no association as well.
-    + If an estimate such as the one we observed is improbable in the _null hypothesis_ we have an indicative of association. If an association as the one we observed in the sample (estimate) doesn't happen when there's no association, then there's evidence of an association (**Double negative**). 
+    + If an estimate such as the one we observed in the sample happens easily in the _null hypothesis_ (P-Values above alpha, see below) it means that we don' have strong evidence of association. What we observed happens when there's no association as well.
+    + If an estimate such as the one we observed is improbable in the _null hypothesis_ (P-Values below alpha, see below) we have an indicative of association. If an association as the one we observed in the sample (estimate) doesn't happen when there's no association, then there's evidence of an association (**Double negative**). 
+    
+<br>
     
 #### P-Value
 
@@ -183,7 +189,9 @@ In the case of the *permutation test* the association in the sample is nullified
 We can phrase the **P-Value** in two ways:
 
 * When we look at the _null hypothesis_ **P-Value** is the proportion of the estimates produced by the _null hypothesis_ that are as extreme as the one we observed in the sample.
-* **P-Value** is the proportion of the behavior of the _null hypothesis_ where it succeds at repeating the association we observed in the sample.
+* **P-Value** is the proportion of the behavior of the _null hypothesis_ where it succeeds at repeating the association we observed in the sample.
+
+<br>
 
 #### Significance Level (Alpha)
 
@@ -202,7 +210,7 @@ A more intuitive way to understand alpha may be that the smaller the alpha the m
 
 <br>
 
-#### Is there a difference in the proportion of well rated rated movies when we compare movies from XX and XXI century?
+#### Is there a difference in the proportion of well rated movies when we compare movies from XX and XXI century?
 
 <br>
 
@@ -239,3 +247,25 @@ independence_test(well_rated ~ xx_century,
 
 * Once again we have results that agree with our previous results employing a **Confindence Interval**.
     +  The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
+
+# C.I vs Hypothesis Testing
+
+<br>
+
+As said at the introduction of this report, this very data-set was analyzed using _confindence intervals_ as well. So now that both tools have been used remains the question? What's the difference?
+
+Both C.I. and Hypothesis Testing may help us weight whether:
+
+* A is significantly different from B
+    + (A != B)
+* A is significantly bigger than B
+    + (A > B)
+* A is significantly smaller than B
+    + (A < B)
+
+However when we employ Hypothesis Testing we have no practical implication of the magnitude of the finding, in other words we can't possibly say how much bigger A is than B, or how much smaller A is than B.  
+
+> With Hypothesis Testing you can pretty much only discuss whether the effect is present or not, while with confidence intervals we can also talk about the magnitude of the effect.
+
+
+
