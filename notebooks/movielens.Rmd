@@ -422,7 +422,7 @@ r2.diff %>%
 
 <br>
 
-## Is there a difference in the proportion of well rated rated movies when we compare movies from XX and XXI century?
+## Is there a difference in the proportion of well rated movies when we compare movies from XX and XXI century?
 
 <br>
 

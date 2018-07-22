@@ -217,7 +217,14 @@ A more intuitive way to understand alpha may be that the smaller the alpha the m
 * Movies are considered well rated when they have been rated above 2.5 stars in terms of median. 
 * We will use as estimator the unpaired difference of the proportion of well rated (TRUE - FALSE):
     + **The proportion of well rated of movies from the XX century minus the proportion of well rated of movies from the XXI century**.
-    
+movies when we compare movies from XX and XXI century.
+* As mentioned early we will use alpha (Confidence Level) at 0.05
+
+<br>
+
+##### **_Null hypothesis:_**  There's no significant difference in the proportion of well rated movies  between movies from the XX and XXI century. 
+##### **_Alternative hypothesis:_**  There's significant difference in the proportion of well rated movies between movies from the XX and XXI century
+  
 <br>
 
 ### Let's use the resample package
@@ -231,9 +238,10 @@ permutationTest2(data = data,
 
 <br>
 
-* In accordance to our previous results employing a **Confindence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association and consequently the null hypothesis should be rejected.
-    +  The _two tailed permutation test_ rendered a **PValue** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.    
+* The _two tailed permutation test_ rendered a **PValue** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis, thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
 
+* In accordance to our previous results employing a **Confindence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association
+    
 <br>
 
 ### Let's use the coin package
@@ -245,8 +253,9 @@ independence_test(well_rated ~ xx_century,
 
 <br>
 
+* The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis,  thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
+
 * Once again we have results that agree with our previous results employing a **Confindence Interval**.
-    +  The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we can say that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
 
 # C.I vs Hypothesis Testing
 
