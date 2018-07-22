@@ -3,11 +3,11 @@ title: "Hypothesis testing on MovieLens dataset"
 date: 21/07/2018
 author: José Benardi de Souza Nunes
 output:
-  html_notebook:
-    toc: yes
-    toc_float: yes
   html_document:
     df_print: paged
+    toc: yes
+    toc_float: yes
+  html_notebook:
     toc: yes
     toc_float: yes
 ---
@@ -18,7 +18,7 @@ output:
 
 </br>
 
-> This report is an analysis on the dataset movielens which can be found in full [here](https://grouplens.org/datasets/movielens/latest/). The code, data, a description of the variables used in this report and another report employing Confindence Intervals on the same dataset can be found in the [original repository](https://github.com/Benardi/movielens_analysis/)
+> This report is an analysis on the dataset movielens which can be found in full [here](https://grouplens.org/datasets/movielens/latest/). The code, data, a description of the variables used in this report and another report employing Confidence Intervals on the same dataset can be found in the [original repository](https://github.com/Benardi/movielens_analysis/)
 
 </br>
 
@@ -147,7 +147,7 @@ data %>%
 
 * Anomalous data filtered (i.e. Hamlet).
 
-* No further data found violating expected range or categories.
+* No data found violating expected range or categories.
 
 <br>
 
@@ -238,9 +238,9 @@ permutationTest2(data = data,
 
 <br>
 
-* The _two tailed permutation test_ rendered a **PValue** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis, thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
+* The _two tailed permutation test_ rendered a **P-Value** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis, thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
 
-* In accordance to our previous results employing a **Confindence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association
+* In accordance to our previous results employing a **Confidence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association
     
 <br>
 
@@ -253,15 +253,15 @@ independence_test(well_rated ~ xx_century,
 
 <br>
 
-* The _two tailed permutation test_ rendered a **PValue** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis,  thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
+* The _two tailed permutation test_ rendered a **P-Value** (2.2e-16) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis,  thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
 
-* Once again we have results that agree with our previous results employing a **Confindence Interval**.
+* Once again we have results that agree with our previous results employing a **Confidence Interval**.
 
 # C.I vs Hypothesis Testing
 
 <br>
 
-As said at the introduction of this report, this very data-set was analyzed using _confindence intervals_ as well. So now that both tools have been used remains the question? What's the difference?
+As said at the introduction of this report, this very data-set was analyzed using _confidence intervals_ as well. So now that both tools have been used remains the question? What's the difference?
 
 Both C.I. and Hypothesis Testing may help us weight whether:
 
