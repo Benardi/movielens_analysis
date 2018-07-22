@@ -195,7 +195,7 @@ We can phrase the **P-Value** in two ways:
 
 #### Significance Level (Alpha)
 
-The significance level, also denoted as alpha or α, is the probability of rejecting the null hypothesis when it is true. For example, a significance level of 0.05 indicates a 5% risk of concluding that a difference exists when there is no actual difference.
+The significance level also denoted as alpha, is the probability of rejecting the null hypothesis when it is true. For example, a significance level of 0.05 indicates a 5% risk of concluding that a difference exists when there is no actual difference.
 
 A more intuitive way to understand alpha may be that the smaller the alpha the more extreme the values the _null hypothesis_ has to create for we to consider similar to the one we observed in the sample. 
 
