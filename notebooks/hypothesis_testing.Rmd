@@ -172,7 +172,7 @@ In the case of the *permutation test* the association in the sample is nullified
 
 <br>
 
-#### Hypothesis test
+#### Hypothesis testing
 
 * Firstly we observe an estimate in the data (An association).
     + If an estimate such as the one we observed in the sample happens easily in the _null hypothesis_ (P-Values above alpha, see below) it means that we don' have strong evidence of association. What we observed happens when there's no association as well.
@@ -227,6 +227,77 @@ movies when we compare movies from XX and XXI century.
   
 <br>
 
+### Let's do it manually
+
+```{r}
+data %>%
+group_by(xx_century) %>%
+  filter(well_rated) %>%
+  summarise(n = n()) -> y  
+
+data %>%  
+  group_by(xx_century) %>%
+  summarise(n = n()) -> total 
+
+  prop1 <- y[y$xx_century == TRUE,]$n / total[total$xx_century == TRUE,]$n
+  prop2 <- y[y$xx_century == FALSE,]$n / total[total$xx_century == FALSE,]$n
+
+diff.prop.obsrvd = prop1 - prop2  
+print(paste("Observed difference in proportion:",diff.prop.obsrvd))
+```
+
+* Estimate observed in the sample 
+
+```{r}
+diffs <- replicate(5000, {
+  data %>%
+  mutate(century_shuffled = sample(xx_century, n())) -> temp
+  
+  temp %>%
+  group_by(century_shuffled) %>%
+    filter(well_rated) %>%
+    summarise(n = n()) -> y  
+  
+  temp %>%  
+    group_by(century_shuffled) %>%
+    summarise(n = n()) -> total 
+  
+    prop1 <- y[y$century_shuffled == TRUE,]$n / total[total$century_shuffled == TRUE,]$n
+    prop2 <- y[y$century_shuffled == FALSE,]$n / total[total$century_shuffled == FALSE,]$n
+      
+    return(prop1 - prop2)
+  })
+
+glimpse(diffs)
+```
+
+* diffs corresponds to the **difference in proportion** (estimate) calculated from the _null hypothesis_
+
+```{r}
+tibble(diferenca = diffs) %>% 
+  ggplot(aes(x = diferenca)) + 
+  geom_histogram(bins = 30, 
+                 fill= "grey",
+                 color="black") + 
+  geom_vline(xintercept = diff.prop.obsrvd,
+             color = "darkgreen",
+             size = 2) 
+```
+
+```{r}
+# p-valor
+pvalue = sum(abs(diffs) >= abs(diff.prop.obsrvd)) / length(diffs)
+print(paste("The P-Value is approximately: ",pvalue))
+```
+
+<br>
+
+* The small P-Value (approximately 0) is far below the chosen **alpha** (0.05), which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis,  thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century. 
+
+* In accordance to our previous results employing a **Confidence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association.
+
+<br>
+
 ### Let's use the resample package
 
 ```{r}
@@ -240,7 +311,9 @@ permutationTest2(data = data,
 
 * The _two tailed permutation test_ rendered a **P-Value** (0.00039992) far below the chosen **alpha** (0.05) which indicates that an association is indeed present, therefore at a confidence level of 95% we reject the null hypothesis, thus we adopt the alternative hypothesis that there's a statistically significant difference between the proportion of well rated movies of movies from the XX century and movies from the XXI century.  
 
-* In accordance to our previous results employing a **Confidence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association
+*  The observed proportion of well rated of movies from the XXI century minus the proportion of well rated of movies from the XX century rendered a negative value (mind the inversion made by the function): FALSE-TRUE -0.04402758.
+    + In other words the XX century has a higher proportion of well rated movies than the XXI century.
+* In accordance to our previous results employing a **Confidence Interval** our results using a _two tailed permutation test_ do suggest that there's in fact an association, furthermore the observed estimate agrees with the previous results employing a **Confidence Interval** where the XX century had a higher proportion of well rated movies than the XXI century 
     
 <br>
 
@@ -257,6 +330,8 @@ independence_test(well_rated ~ xx_century,
 
 * Once again we have results that agree with our previous results employing a **Confidence Interval**.
 
+<br>
+
 # C.I vs Hypothesis Testing
 
 <br>
@@ -272,9 +347,9 @@ Both C.I. and Hypothesis Testing may help us weight whether:
 * A is significantly smaller than B
     + (A < B)
 
-However when we employ Hypothesis Testing we have no practical implication of the magnitude of the finding, in other words we can't possibly say how much bigger A is than B, or how much smaller A is than B.  
+However when we employ Hypothesis Testing we have no practical implication of the magnitude of the finding, in other words we can't possibly say how much bigger A is than B, or how much smaller A is than B (the relevance of the finding). Notice that at no point in this report we commented on terms of relevance.
 
-> With Hypothesis Testing you can pretty much only discuss whether the effect is present or not, while with confidence intervals we can also talk about the magnitude of the effect.
+> With Hypothesis Testing you can pretty much only discuss whether the effect is present or not, while with Confidence Intervals we can also talk about the magnitude of the effect. In other words with Confidence Intervals we can talk not only about the significancy  of an effect but about it's relevance.
 
 
 
