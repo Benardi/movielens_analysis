@@ -239,7 +239,7 @@ mean.diff %>%
 
 * There's evidence at 95% of confidence that heterogeneous movies are significantly better rated than the Homogeneous movies.
 
-* The difference in ratings although significant in statistical terms is very small in  practical terms
+* The difference in means although significant in statistical terms is very small in  practical terms and therefore is not relevant (doesn't amount to much in terms of magnitude).
 
 > Aparently staying faithful to the same concept all the time is counter productive. One could argue that to be truly complete a movie should  dab into more than one aspect of the human psyche. This makes sense when we think about Chaplin, whose best movies not only made us laugh but also dared from time to time to make us cry or make us think. 
 
@@ -481,6 +481,8 @@ prop.diff %>%
 ```
 
 * There's significant evidence at 95% of confidence, which indicates that movies from the XX century have a higher proportion of well rated movies in terms of inference as well.
+
+* The difference in proportions although significant in statistical terms is very small in  practical terms and therefore is not relevant (doesn't amount to much in terms of magnitude). 
 
 > The XX century has had its fair share of awful movies, however it's natural that most of the forgettable movies don't make their way into our minds and datasets. The bad movies from the XXI century are still fresh on our minds and our datasets. For this reason it's understandable that there are less well rated movies in the group of the XXI century.
 
