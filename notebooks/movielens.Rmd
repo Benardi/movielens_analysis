@@ -1,5 +1,6 @@
 ---
-title: "Analysis on MovieLens dataset"
+title: "Analysis on MovieLens dataset with bootstrap"
+subtitle: "Analysis with statistical inference by bootstrap on data about movie ratings from the MovieLens dataset"
 date: 14/07/2018
 author: José Benardi de Souza Nunes
 output:
